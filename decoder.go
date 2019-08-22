@@ -25,6 +25,8 @@ type Entry struct {
 	NumOfElem          uint64
 	LenOfLargestElem   uint64
 	FieldOfLargestElem string
+	Ttl                int64
+	KeyPattern         string
 }
 
 // Decoder decode rdb file
@@ -57,6 +59,7 @@ func (d *Decoder) Set(key, value []byte, expiry int64) {
 		Bytes:     bytes,
 		Type:      "string",
 		NumOfElem: d.m.ElemLen(value),
+		Ttl:       expiry,
 	}
 	d.Entries <- e
 }
@@ -75,6 +78,7 @@ func (d *Decoder) StartHash(key []byte, length, expiry int64) {
 		Bytes:     bytes,
 		Type:      "hash",
 		NumOfElem: uint64(length),
+		Ttl:       expiry,
 	}
 	d.tmpStore[keyStr] = e
 }
@@ -117,6 +121,7 @@ func (d *Decoder) StartSet(key []byte, cardinality, expiry int64) {
 		Bytes:     bytes,
 		Type:      "set",
 		NumOfElem: uint64(cardinality),
+		Ttl:       expiry,
 	}
 	d.tmpStore[keyStr] = e
 }
@@ -159,6 +164,7 @@ func (d *Decoder) StartList(key []byte, length, expiry int64) {
 		Bytes:     bytes,
 		Type:      "list",
 		NumOfElem: uint64(length),
+		Ttl:       expiry,
 	}
 	d.tmpStore[keyStr] = e
 }
@@ -199,6 +205,7 @@ func (d *Decoder) StartZSet(key []byte, cardinality, expiry int64) {
 		Bytes:     bytes,
 		Type:      "sortedset",
 		NumOfElem: uint64(cardinality),
+		Ttl: expiry,
 	}
 	d.tmpStore[keyStr] = e
 }

@@ -24,11 +24,11 @@ import (
 
 	"path/filepath"
 
+	"encoding/json"
 	"github.com/dongmx/rdb"
 	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/julienschmidt/httprouter"
 	"github.com/xueqiu/rdr/static"
-	"encoding/json"
 )
 
 //go:generate go-bindata -prefix "static/" -o=static/static.go -pkg=static -ignore static.go static/...
@@ -177,6 +177,22 @@ func keys(c *cli.Context) {
 	}
 }
 
+func dumpCSV(c *cli.Context) {
+	if c.NArg() < 1 {
+		fmt.Fprintln(c.App.ErrWriter, "keys requires at least 1 argument")
+		cli.ShowCommandHelp(c, "keys")
+		return
+	}
+	for _, filepath := range c.Args() {
+		decoder := NewDecoder()
+		go decode(c, decoder, filepath)
+		for e := range decoder.Entries {
+			//fmt.Fprintf(c.App.Writer, "%v\n", e.Key)
+			fmt.Fprintf(c.App.Writer, "%v,%v,%v,%v,%v,%v\n", e.Key, e.Bytes, e.Type, e.NumOfElem, e.Ttl, "")
+		}
+	}
+}
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "rdr"
@@ -186,10 +202,10 @@ func main() {
 	app.ErrWriter = os.Stderr
 	app.Commands = []cli.Command{
 		cli.Command{
-		    Name: "dump",
-		    Usage: "dump statistical information of rdbfile to STDOUT",
-		    ArgsUsage: "FILE1 [FILE2] [FILE3]...",
-		    Action: dump,
+			Name:      "dump",
+			Usage:     "dump statistical information of rdbfile to STDOUT",
+			ArgsUsage: "FILE1 [FILE2] [FILE3]...",
+			Action:    dump,
 		},
 		cli.Command{
 			Name:      "show",
@@ -210,6 +226,12 @@ func main() {
 			ArgsUsage: "FILE1 [FILE2] [FILE3]...",
 			Action:    keys,
 		},
+		cli.Command{
+			Name:      "dumpCSV",
+			Usage:     "dumpCSV key ttl bytes rdbfile",
+			ArgsUsage: "FILE1 [FILE2] [FILE3]...",
+			Action:    dumpCSV,
+		},
 	}
 	app.CommandNotFound = func(c *cli.Context, command string) {
 		fmt.Fprintf(c.App.ErrWriter, "command %q can not be found.\n", command)
@@ -217,4 +239,3 @@ func main() {
 	}
 	app.Run(os.Args)
 }
-
