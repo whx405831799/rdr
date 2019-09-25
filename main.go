@@ -17,6 +17,7 @@ package main
 import (
 	"net/http"
 	"os"
+	"regexp"
 
 	"github.com/urfave/cli"
 
@@ -187,10 +188,13 @@ func dumpCSV(c *cli.Context) {
 		decoder := NewDecoder()
 		go decode(c, decoder, filepath)
 		for e := range decoder.Entries {
-			//fmt.Fprintf(c.App.Writer, "%v\n", e.Key)
-			fmt.Fprintf(c.App.Writer, "%v,%v,%v,%v,%v,%v\n", e.Key, e.Bytes, e.Type, e.NumOfElem, e.Ttl, "")
+			fmt.Fprintf(c.App.Writer, "%v,%v,%v,%v,%v,%v\n", e.Key, e.Bytes, e.Type, e.NumOfElem, e.Ttl, extractPattern(e.Key))
 		}
 	}
+}
+var re = regexp.MustCompile("([0-9a-f]{32})|([0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})")
+func extractPattern(key string) string {
+	return re.ReplaceAllString(key, "*")
 }
 
 func main() {
