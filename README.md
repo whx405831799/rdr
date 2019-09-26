@@ -42,6 +42,10 @@ NAME:
 
 USAGE:
    rdr keys FILE1 [FILE2] [FILE3]...
+   
+NEW METHOD
+
+./rdr dumpCSV  redis.rdb > test.csv
 ```
 
 [Linux amd64 Download](http://ohjx11q65.bkt.clouddn.com/rdr)
